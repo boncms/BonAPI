@@ -1,0 +1,90 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Category {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  description String?
+  videoCount  Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  videos      Video[]
+  
+  @@map("categories")
+}
+
+model Model {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  description String?
+  avatar      String?
+  videoCount  Int      @default(0)
+  totalViews  Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  videos      Video[]
+  
+  @@map("models")
+}
+
+model Video {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String?
+  duration    String
+  thumbnail   String?
+  videoUrl    String
+  views       Int      @default(0)
+  likes       Int      @default(0)
+  dislikes    Int      @default(0)
+  uploadDate  DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  categoryId  Int
+  category    Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  modelId     Int
+  model       Model    @relation(fields: [modelId], references: [id], onDelete: Cascade)
+  tags        VideoTag[]
+  comments    Comment[]
+  
+  @@map("videos")
+}
+
+model VideoTag {
+  id      Int    @id @default(autoincrement())
+  name    String
+  videoId Int
+  video   Video  @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  
+  @@unique([name, videoId])
+  @@map("video_tags")
+}
+
+model Comment {
+  id        Int      @id @default(autoincrement())
+  author    String
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  videoId   Int
+  video     Video    @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  
+  @@map("comments")
+}
